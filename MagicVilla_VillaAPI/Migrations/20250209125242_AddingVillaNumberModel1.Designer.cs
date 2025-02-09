@@ -4,6 +4,7 @@ using MagicVilla_VillaAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MagicVilla_VillaAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250209125242_AddingVillaNumberModel1")]
+    partial class AddingVillaNumberModel1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,12 +151,12 @@ namespace MagicVilla_VillaAPI.Migrations
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("VillaId")
+                    b.Property<int>("VillaID")
                         .HasColumnType("int");
 
                     b.HasKey("VillaNo");
 
-                    b.HasIndex("VillaId");
+                    b.HasIndex("VillaID");
 
                     b.ToTable("VillaNumbers");
                 });
@@ -162,7 +165,7 @@ namespace MagicVilla_VillaAPI.Migrations
                 {
                     b.HasOne("MagicVilla_VillaAPI.Models.Villa", "Villa")
                         .WithMany()
-                        .HasForeignKey("VillaId")
+                        .HasForeignKey("VillaID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
