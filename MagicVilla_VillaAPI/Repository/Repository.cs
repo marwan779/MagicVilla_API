@@ -18,7 +18,7 @@ namespace MagicVilla_VillaAPI.Repository
         }
 
 
-        public async Task CreateAsync(T entity)
+        public async Task AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
             await SaveAsync();
