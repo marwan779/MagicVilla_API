@@ -110,7 +110,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
                 villa.CreatedDate = DateTime.Now;
 
-                await _villaNumberRepository.AddAsync(villa);
+                await _villaNumberRepository.CreateAsync(villa);
                 await _villaNumberRepository.SaveAsync();
 
 
@@ -150,7 +150,7 @@ namespace MagicVilla_VillaAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                await _villaNumberRepository.RemoveAsync(Result);
+                await _villaNumberRepository.DeleteAsync(Result);
                 await _villaNumberRepository.SaveAsync();
 
                 _response.StatusCode = HttpStatusCode.NoContent;

@@ -18,7 +18,7 @@ namespace MagicVilla_VillaAPI.Repository
         }
 
 
-        public async Task AddAsync(T entity)
+        public async Task CreateAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
             await SaveAsync();
@@ -73,7 +73,7 @@ namespace MagicVilla_VillaAPI.Repository
             return await Result.FirstOrDefaultAsync();
         }
 
-        public async Task RemoveAsync(T entity)
+        public async Task DeleteAsync(T entity)
         {
             _context.Remove(entity);
             await SaveAsync(); 
