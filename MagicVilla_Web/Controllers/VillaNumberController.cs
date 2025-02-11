@@ -68,6 +68,7 @@ namespace MagicVilla_Web.Controllers
 
                 if (Response != null && Response.IsSuccess == true)
                 {
+                    TempData["Success"] = "Villa Number Created Successfully";
                     return RedirectToAction(nameof(VillaNumberIndex));
                 }
                 else
@@ -138,6 +139,7 @@ namespace MagicVilla_Web.Controllers
 
                 if (Response != null && Response.IsSuccess == true)
                 {
+                    TempData["Success"] = "Villa Number Updated Successfully";
                     return RedirectToAction(nameof(VillaNumberIndex));
                 }
                 else
@@ -208,7 +210,8 @@ namespace MagicVilla_Web.Controllers
 
 				if (Response != null && Response.IsSuccess == true)
 				{
-					return RedirectToAction(nameof(VillaNumberIndex));
+                    TempData["Success"] = "Villa Number Deleted Successfully";
+                    return RedirectToAction(nameof(VillaNumberIndex));
 				}
 				else
 				{
