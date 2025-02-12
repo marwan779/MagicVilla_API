@@ -15,51 +15,56 @@ namespace MagicVilla_Web.Services
             Client = httpClientFactory;
             CLientUrl = Configuration.GetValue<string>("ServiceUrls:VillaAPI");
         }
-        public Task<T> CreateAsync<T>(CreateVillaNumberDTO DTO)
+        public Task<T> CreateAsync<T>(CreateVillaNumberDTO DTO, string Token)
         {
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
                 Url = CLientUrl + "api/VillaNumberAPI",
-                Data = DTO
+                Data = DTO,
+                Token = Token
             });
 
         }
 
-        public Task<T> DeleteAsync<T>(int Id)
+        public Task<T> DeleteAsync<T>(int Id, string Token)
         {
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.DELETE,
                 Url = CLientUrl+ "api/VillaNumberAPI/" + Id,
+                Token = Token
             });
         }
 
-        public Task<T> GetAllAsync<T>()
+        public Task<T> GetAllAsync<T>(string Token)
         {
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.GET,
                 Url = CLientUrl + "api/VillaNumberAPI",
+                Token = Token
             });
         }
 
-        public Task<T> GetAsync<T>(int Id)
+        public Task<T> GetAsync<T>(int Id , string Token)
         {
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.GET,
                 Url = CLientUrl + "api/VillaNumberAPI/" + Id,
+                Token = Token
             });
         }
 
-        public Task<T> UpdateAsync<T>(UpdateVillaNumberDTO DTO)
+        public Task<T> UpdateAsync<T>(UpdateVillaNumberDTO DTO , string Token)
         {
             return SendAsync<T>(new APIRequest() 
             { 
                 apiType = ApiType.PUT,
                 Url = CLientUrl + "api/VillaNumberAPI/" + DTO.VillaNo,
-                Data = DTO 
+                Data = DTO ,
+                Token = Token
             });
         }
     }

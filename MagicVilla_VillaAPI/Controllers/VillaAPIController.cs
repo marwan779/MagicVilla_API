@@ -53,7 +53,6 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Roles = "admin")]
         public async Task<ActionResult<APIResponse>> GetVilla(int Id)
         {
             try
@@ -84,6 +83,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -127,6 +127,7 @@ namespace MagicVilla_VillaAPI.Controllers
             return _response;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{Id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -167,7 +168,7 @@ namespace MagicVilla_VillaAPI.Controllers
             return _response;
         }
 
-
+        [Authorize(Roles = "admin")]
         [HttpPut("{Id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
