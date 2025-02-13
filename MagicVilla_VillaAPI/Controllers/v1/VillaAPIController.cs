@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Azure;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Net;
 
 namespace MagicVilla_VillaAPI.Controllers.v1
@@ -27,7 +29,8 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ResponseCache(CacheProfileName = "Default30")]
-        public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name = "OccupancyFilter")] int? OccupancyFilter)
+        public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name = "OccupancyFilter")] int? OccupancyFilter,
+            [FromQuery] string? Search, int PageSize = 0, int PageNumber = 1)
         {
             try
             {
@@ -35,12 +38,26 @@ namespace MagicVilla_VillaAPI.Controllers.v1
 
                 if (OccupancyFilter != null) 
                 {
-                    Villas =  await _villaRepository.GetAllAsync(v => v.Occupancy == OccupancyFilter);
+                    Villas =  await _villaRepository.GetAllAsync(v => v.Occupancy == OccupancyFilter,
+                        PageSize: PageSize, PageNumber: PageNumber);
                 }
                 else
                 {
-                    Villas  = await _villaRepository.GetAllAsync();
+                    Villas  = await _villaRepository.GetAllAsync(PageSize: PageSize, PageNumber: PageNumber);
                 }
+
+                if(!String.IsNullOrEmpty(Search))
+                {
+                    Villas = await _villaRepository.GetAllAsync(v => v.Name.ToLower() == Search.ToLower());
+                }
+
+                Pagination pagination = new()
+                {
+                    PageNumber = PageNumber,
+                    PageSize = PageSize,
+                };
+
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(pagination));
 
                 _response.Result = _mapper.Map<List<VillaDTO>>(Villas);
                 _response.StatusCode = HttpStatusCode.OK;
@@ -69,14 +86,18 @@ namespace MagicVilla_VillaAPI.Controllers.v1
             {
                 if (Id == 0)
                 {
-                    return BadRequest();
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return _response;
                 }
 
                 Villa Result = await _villaRepository.GetAsync(v => v.Id == Id);
 
                 if (Result == null)
                 {
-                    return NotFound();
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    return _response;
                 }
 
                 _response.Result = _mapper.Map<VillaDTO>(Result);
