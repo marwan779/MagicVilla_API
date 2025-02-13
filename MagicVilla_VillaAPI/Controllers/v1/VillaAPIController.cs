@@ -26,12 +26,21 @@ namespace MagicVilla_VillaAPI.Controllers.v1
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetVillas()
+        [ResponseCache(CacheProfileName = "Default30")]
+        public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name = "OccupancyFilter")] int? OccupancyFilter)
         {
-
             try
             {
-                IEnumerable<Villa> Villas = await _villaRepository.GetAllAsync();
+                IEnumerable<Villa> Villas;
+
+                if (OccupancyFilter != null) 
+                {
+                    Villas =  await _villaRepository.GetAllAsync(v => v.Occupancy == OccupancyFilter);
+                }
+                else
+                {
+                    Villas  = await _villaRepository.GetAllAsync();
+                }
 
                 _response.Result = _mapper.Map<List<VillaDTO>>(Villas);
                 _response.StatusCode = HttpStatusCode.OK;
@@ -88,7 +97,8 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<APIResponse>> CreateVilla([FromBody] CreateVillaDTO createVillaDTO)
         {
             try
