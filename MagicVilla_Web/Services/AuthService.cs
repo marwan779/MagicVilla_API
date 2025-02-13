@@ -21,7 +21,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
-                Url = CLientUrl + "api/UserAuth/Login",
+                Url = CLientUrl + "api/v1/UserAuth/Login",
                 Data = logInRequestDTO
             });
         }
@@ -31,7 +31,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
-                Url = CLientUrl + "api/UserAuth/Register",
+                Url = CLientUrl + "api/v1/UserAuth/Register",
                 Data = registerationRequestDTO
             });
         }
