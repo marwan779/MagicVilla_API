@@ -58,7 +58,7 @@ namespace MagicVilla_VillaAPI.Controllers
             }
 
 
-            LocalUser Response = await _userRepository.Register(registerationRequestDTO);
+            UserDTO Response = await _userRepository.Register(registerationRequestDTO);
 
             if(Response == null)
             {

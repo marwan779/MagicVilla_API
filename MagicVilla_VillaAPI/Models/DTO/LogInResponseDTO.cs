@@ -2,8 +2,7 @@
 {
     public class LogInResponseDTO
     {
-        public LocalUser LocalUser { get; set; }
-
+        public UserDTO LocalUser { get; set; }
         public string Token { get; set; }   
     }
 }
