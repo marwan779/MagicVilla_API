@@ -10,7 +10,7 @@
             DELETE
         }
 
-        public static string SessionToken = "JWTToken";
+        public static string AccessToken = "JWTToken";
         public static string VillaAPIVersion = "v2";
         public static string AdminRole = "admin";
         public static string CustomerRole = "customer";

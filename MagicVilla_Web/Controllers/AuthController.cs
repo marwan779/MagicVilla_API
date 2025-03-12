@@ -18,9 +18,11 @@ namespace MagicVilla_Web.Controllers
     public class AuthController : Controller
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly ITokenProvider _tokenProvider;
+        public AuthController(IAuthService authService, ITokenProvider tokenProvider)
         {
             _authService = authService;
+            _tokenProvider = tokenProvider; 
         }
 
         [HttpGet]
@@ -40,7 +42,7 @@ namespace MagicVilla_Web.Controllers
                 LogInResponseDTO logInResponseDTO = JsonConvert.DeserializeObject<LogInResponseDTO>(Convert.ToString(Response.Result));
                 
                 var handler = new JwtSecurityTokenHandler();
-                var token = handler.ReadJwtToken(logInResponseDTO.Token);
+                var token = handler.ReadJwtToken(logInResponseDTO.AccessToken);
 
                 var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
                 identity.AddClaim(new Claim(ClaimTypes.Name, logInResponseDTO.LocalUser.UserName));
@@ -49,7 +51,7 @@ namespace MagicVilla_Web.Controllers
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
 
-                HttpContext.Session.SetString(StaticData.SessionToken, logInResponseDTO.Token);
+                _tokenProvider.SetToken(logInResponseDTO.AccessToken);
 
                 return RedirectToAction("Index", "Home");   
             }
@@ -107,7 +109,7 @@ namespace MagicVilla_Web.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
-            HttpContext.Session.SetString(StaticData.SessionToken, "");
+            _tokenProvider.ClearToken();
 
             return RedirectToAction("Index", "Home");
         }

@@ -59,11 +59,25 @@ namespace MagicVilla_VillaAPI.Repository
             {
                 return new LogInResponseDTO
                 {
-                    Token = "",
+                    AccessToken = "",
                     LocalUser = null,
                 };
             }
 
+            string accessToken = await GenerateToken(User);
+
+            LogInResponseDTO Response = new LogInResponseDTO
+            {
+                AccessToken = accessToken,
+                LocalUser = _mapper.Map<UserDTO>(User),
+            };
+
+
+            return Response;
+        }
+
+        public async Task<string> GenerateToken(ApplicationUser User)
+        {
             var Roles = await _userManger.GetRolesAsync(User);
             var TokenHandler = new JwtSecurityTokenHandler();
             var Key = Encoding.ASCII.GetBytes(SecertKey);
@@ -83,14 +97,9 @@ namespace MagicVilla_VillaAPI.Repository
 
             var Token1 = TokenHandler.CreateToken(TokenDescriptor);
 
-            LogInResponseDTO Response = new LogInResponseDTO
-            {
-                Token = TokenHandler.WriteToken(Token1),
-                LocalUser = _mapper.Map<UserDTO>(User),
-            };
+            string Result = TokenHandler.WriteToken(Token1);
 
-
-            return Response;
+            return Result;
         }
 
         public async Task<UserDTO> Register(RegisterationRequestDTO registerationRequestDTO)

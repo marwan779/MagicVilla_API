@@ -6,35 +6,36 @@ using static MagicVilla_Utility.StaticData;
 
 namespace MagicVilla_Web.Services
 {
-    public class AuthService : BaseService, IAuthService
+    public class AuthService: IAuthService
     {
         private readonly IHttpClientFactory Client;
         private string CLientUrl;
-
-        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration Configuration) : base(httpClientFactory)
+        private readonly IBaseService _baseService;
+        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration Configuration, IBaseService baseService)
         {
             Client = httpClientFactory;
             CLientUrl = Configuration.GetValue<string>("ServiceUrls:VillaAPI");
+            _baseService = baseService;
         }
 
-        public Task<T> LoginAsync<T>(LogInRequestDTO logInRequestDTO)
+        public async Task<T> LoginAsync<T>(LogInRequestDTO logInRequestDTO)
         {
-            return SendAsync<T>(new APIRequest()
+            return await _baseService.SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
                 Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/UserAuth/Login",
                 Data = logInRequestDTO
-            });
+            }, WithBearer: false);
         }
 
-        public Task<T> RegisterAsync<T>(RegisterationRequestDTO registerationRequestDTO)
+        public async Task<T> RegisterAsync<T>(RegisterationRequestDTO registerationRequestDTO)
         {
-            return SendAsync<T>(new APIRequest()
+            return await _baseService.SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
                 Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/UserAuth/Register",
                 Data = registerationRequestDTO
-            });
+            }, WithBearer: false);
         }
     }
 }

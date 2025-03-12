@@ -26,7 +26,7 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             LogInResponseDTO Response = await _userRepository.LogIn(logInRequestDTO);
 
-            if(Response.LocalUser == null ||String.IsNullOrEmpty(Response.Token))
+            if(Response.LocalUser == null ||String.IsNullOrEmpty(Response.AccessToken))
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add("User name or password is incorrect");
