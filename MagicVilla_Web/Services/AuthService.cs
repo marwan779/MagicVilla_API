@@ -1,4 +1,5 @@
-﻿using MagicVilla_Web.Models;
+﻿using MagicVilla_Utility;
+using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.DTO;
 using MagicVilla_Web.Services.IServices;
 using static MagicVilla_Utility.StaticData;
@@ -21,7 +22,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
-                Url = CLientUrl + "api/v1/UserAuth/Login",
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/UserAuth/Login",
                 Data = logInRequestDTO
             });
         }
@@ -31,7 +32,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
-                Url = CLientUrl + "api/v1/UserAuth/Register",
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/UserAuth/Register",
                 Data = registerationRequestDTO
             });
         }

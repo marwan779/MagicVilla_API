@@ -23,14 +23,51 @@ namespace MagicVilla_Web.Services
             try
             {
                 var Client = HttpClientFactory.CreateClient("MagicAPI");
+
                 HttpRequestMessage Message = new HttpRequestMessage();
-                Message.Headers.Add("Accept", "application/json");
-                Message.RequestUri = new Uri(apiRequest.Url);
-                if(apiRequest.Data != null)
+
+                if (apiRequest.ContentType == ContentType.MultipartFormData) 
                 {
-                    Message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data),
-                        System.Text.Encoding.UTF8, "application/json");
+                    Message.Headers.Add("Accept", "*/*");
                 }
+                else
+                {
+                    Message.Headers.Add("Accept", "application/json");
+                }
+
+                Message.RequestUri = new Uri(apiRequest.Url);
+
+                if(apiRequest.ContentType == ContentType.MultipartFormData)
+                {
+                    var Content = new MultipartFormDataContent();
+
+                    foreach(var Property in apiRequest.Data.GetType().GetProperties())
+                    {
+                        var Value = Property.GetValue(apiRequest.Data);
+
+                        if(Value is FormFile)
+                        {
+                            var File = (FormFile)Value;
+                            Content.Add(new StreamContent(File.OpenReadStream()), Property.Name, File.FileName);
+
+                        }
+                        else
+                        {
+                            Content.Add(new StringContent(Value == null ? "": Value.ToString()), Property.Name);
+                        }
+                    }
+
+                    Message.Content = Content;
+                }
+                else
+                {
+                    if (apiRequest.Data != null)
+                    {
+                        Message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data),
+                            System.Text.Encoding.UTF8, "application/json");
+                    }
+                }
+
 
                 switch (apiRequest.apiType)
                 {

@@ -29,14 +29,16 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Villa" asp-action="VillaIndex">Villa</a>
-                        </li>
+                        @if(User.IsInRole(StaticData.AdminRole))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Villa" asp-action="VillaIndex">Villa</a>
+                            </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="VillaNumber" asp-action="VillaNumberIndex">Villa Number</a>
-                        </li>
-
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="VillaNumber" asp-action="VillaNumberIndex">Villa Number</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
@@ -48,8 +50,12 @@
 
 
                     <ul class="navbar-nav ">
-                        @if (!String.IsNullOrEmpty(Context.HttpContext.Session.GetString(StaticData.SessionToken)))
+                        @if (User.Identity.IsAuthenticated)
                         {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="#">Hello, @User.Identity.Name</a>
+                            </li>
+
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">Logout</a>
                             </li>

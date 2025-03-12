@@ -11,5 +11,15 @@
         }
 
         public static string SessionToken = "JWTToken";
+        public static string VillaAPIVersion = "v2";
+        public static string AdminRole = "admin";
+        public static string CustomerRole = "customer";
+
+        public enum ContentType
+        {
+            Json,
+            MultipartFormData
+        }
+
     }
 }

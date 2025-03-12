@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿    using System.ComponentModel.DataAnnotations;
 
 namespace MagicVilla_VillaAPI.Models.DTO
 {
@@ -13,7 +13,8 @@ namespace MagicVilla_VillaAPI.Models.DTO
         public double Rate { get; set; }
         public int Occupancy { get; set; }
         public int Sqft { get; set; }
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; } = string.Empty;
+        public string? ImageLocalPath { get; set; } = string.Empty;
         public string Amenity { get; set; }  = string.Empty ;
 
     }

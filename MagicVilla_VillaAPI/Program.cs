@@ -47,10 +47,10 @@ builder.Services.AddAuthentication(a =>
 
 builder.Services.AddControllers(options =>
 {
-    options.CacheProfiles.Add("Default30", new CacheProfile
-    {
-        Duration = 30
-    });
+    //options.CacheProfiles.Add("Default30", new CacheProfile
+    //{
+    //    Duration = 30
+    //});
 
 }).AddNewtonsoftJson();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -145,10 +145,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options => {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Magic_VillaV1");
         options.SwaggerEndpoint("/swagger/v2/swagger.json", "Magic_VillaV2");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Magic_VillaV1");
     });
 }
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

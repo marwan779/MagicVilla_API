@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
@@ -63,6 +64,15 @@ namespace MagicVilla_Web.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            List<SelectListItem> RolesList = new List<SelectListItem>() 
+            { 
+                new SelectListItem {Text = StaticData.AdminRole, Value = StaticData.AdminRole },
+                new SelectListItem {Text = StaticData.CustomerRole, Value = StaticData.CustomerRole },
+
+            };
+
+            ViewBag.RoleList = RolesList;
+
             return View();
         }
 
@@ -70,11 +80,25 @@ namespace MagicVilla_Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterationRequestDTO registerationRequestDTO)
         {
+            if(string.IsNullOrEmpty(registerationRequestDTO.Role))
+            {
+                registerationRequestDTO.Role = StaticData.CustomerRole;
+            }
+
             APIResponse Response = await _authService.RegisterAsync<APIResponse>(registerationRequestDTO);
             if(Response != null && Response.IsSuccess == true) 
             {
                 return RedirectToAction(nameof(Login));
             }
+
+            List<SelectListItem> RolesList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text = StaticData.AdminRole, Value = StaticData.AdminRole },
+                new SelectListItem {Text = StaticData.CustomerRole, Value = StaticData.CustomerRole },
+
+            };
+
+            ViewBag.RoleList = RolesList;
 
             return View();
         }

@@ -1,4 +1,5 @@
-﻿using MagicVilla_Web.Models;
+﻿using MagicVilla_Utility;
+using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.DTO;
 using MagicVilla_Web.Services.IServices;
 using static MagicVilla_Utility.StaticData;
@@ -20,7 +21,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
-                Url = CLientUrl + "api/v1/VillaNumberAPI",
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaNumberAPI",
                 Data = DTO,
                 Token = Token
             });
@@ -32,7 +33,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.DELETE,
-                Url = CLientUrl+ "api/v1/VillaNumberAPI/" + Id,
+                Url = CLientUrl+ $"api/{StaticData.VillaAPIVersion}/VillaNumberAPI/" + Id,
                 Token = Token
             });
         }
@@ -42,7 +43,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.GET,
-                Url = CLientUrl + "api/v1/VillaNumberAPI",
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaNumberAPI",
                 Token = Token
             });
         }
@@ -52,7 +53,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.GET,
-                Url = CLientUrl + "api/v1/VillaNumberAPI/" + Id,
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaNumberAPI/" + Id,
                 Token = Token
             });
         }
@@ -62,7 +63,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest() 
             { 
                 apiType = ApiType.PUT,
-                Url = CLientUrl + "api/v1/VillaNumberAPI/" + DTO.VillaNo,
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaNumberAPI/" + DTO.VillaNo,
                 Data = DTO ,
                 Token = Token
             });

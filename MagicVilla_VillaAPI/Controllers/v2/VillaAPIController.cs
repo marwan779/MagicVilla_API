@@ -1,18 +1,18 @@
 ﻿using AutoMapper;
-using Azure;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net;
 
-namespace MagicVilla_VillaAPI.Controllers.v1
+namespace MagicVilla_VillaAPI.Controllers.v2
 {
     [Route("api/v{version:apiversion}/[controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     public class VillaAPIController : ControllerBase
     {
         protected APIResponse _response;
@@ -36,17 +36,17 @@ namespace MagicVilla_VillaAPI.Controllers.v1
             {
                 IEnumerable<Villa> Villas;
 
-                if (OccupancyFilter != null) 
+                if (OccupancyFilter != null)
                 {
-                    Villas =  await _villaRepository.GetAllAsync(v => v.Occupancy == OccupancyFilter,
+                    Villas = await _villaRepository.GetAllAsync(v => v.Occupancy == OccupancyFilter,
                         PageSize: PageSize, PageNumber: PageNumber);
                 }
                 else
                 {
-                    Villas  = await _villaRepository.GetAllAsync(PageSize: PageSize, PageNumber: PageNumber);
+                    Villas = await _villaRepository.GetAllAsync(PageSize: PageSize, PageNumber: PageNumber);
                 }
 
-                if(!String.IsNullOrEmpty(Search))
+                if (!String.IsNullOrEmpty(Search))
                 {
                     Villas = await _villaRepository.GetAllAsync(v => v.Name.ToLower() == Search.ToLower());
                 }
@@ -120,7 +120,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> CreateVilla([FromBody] CreateVillaDTO createVillaDTO)
+        public async Task<ActionResult<APIResponse>> CreateVilla([FromForm] CreateVillaDTO createVillaDTO)
         {
             try
             {
@@ -141,6 +141,37 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 villa.CreatedDate = DateTime.Now;
 
                 await _villaRepository.CreateAsync(villa);
+
+                if(createVillaDTO.Image != null)
+                {
+                    string FileName = villa.Id.ToString() + Path.GetExtension(createVillaDTO.Image.FileName);
+                    string FilePath = @"wwwroot\ProductImage\" + FileName;
+                    var DirectoryLocation = Path.Combine(Directory.GetCurrentDirectory(), FilePath);
+
+                    FileInfo File = new FileInfo(FilePath);
+
+                    if (File.Exists)
+                    {
+                        File.Delete();
+                    }
+
+                    using (var fileStream = new FileStream(DirectoryLocation, FileMode.Create))
+                    {
+                        createVillaDTO.Image.CopyTo(fileStream);
+                    }
+
+                    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    villa.ImageUrl = baseUrl + "/ProductImage/" + FileName;
+                    villa.ImageLocalPath = FilePath;
+
+                }
+                else
+                {
+                    villa.ImageUrl = "https://placehold.co/600x400";
+                }
+
+                await _villaRepository.UpdateAsync(villa);
+
                 await _villaRepository.SaveAsync();
 
 
@@ -169,6 +200,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [Authorize(Roles = "admin")]
         public async Task<ActionResult<APIResponse>> DeleteVilla(int Id)
         {
+
             try
             {
                 if (Id == 0)
@@ -183,6 +215,19 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                     ModelState.AddModelError("ErrorMessages", "Villa does not Exists!");
                     _response.IsSuccess = false;
                     return BadRequest(_response);
+                }
+
+
+                if (!String.IsNullOrEmpty(Result.ImageUrl))
+                {
+                    string OldFilePath = Path.Combine(Directory.GetCurrentDirectory(), Result.ImageLocalPath);
+
+                    FileInfo File = new FileInfo(OldFilePath);
+
+                    if (File.Exists)
+                    {
+                        File.Delete();
+                    }
                 }
 
                 await _villaRepository.DeleteAsync(Result);
@@ -204,7 +249,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [HttpPut("{Id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> UpdateVilla(int Id, [FromBody] UpdateVillaDTO updateVillaDTO)
+        public async Task<ActionResult<APIResponse>> UpdateVilla(int Id, [FromForm] UpdateVillaDTO updateVillaDTO)
         {
             try
             {
@@ -216,6 +261,44 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 }
 
                 Villa Result = _mapper.Map<Villa>(updateVillaDTO);
+
+
+                if (updateVillaDTO.Image != null)
+                {
+
+                    if (!String.IsNullOrEmpty(updateVillaDTO.ImageUrl))
+                    {
+                        string OldFilePath = Path.Combine(Directory.GetCurrentDirectory(), Result.ImageUrl);
+
+                        FileInfo File = new FileInfo(OldFilePath);
+
+                        if (File.Exists)
+                        {
+                            File.Delete();
+                        }
+                    }
+
+                    string FileName = Result.Id.ToString() + Path.GetExtension(updateVillaDTO.Image.FileName);
+                    string FilePath = @"wwwroot\ProductImage\" + FileName;
+                    var DirectoryLocation = Path.Combine(Directory.GetCurrentDirectory(), FilePath);
+
+                    
+
+                    using (var fileStream = new FileStream(DirectoryLocation, FileMode.Create))
+                    {
+                        updateVillaDTO.Image.CopyTo(fileStream);
+                    }
+
+                    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    Result.ImageUrl = baseUrl + "/ProductImage/" + FileName;
+                    Result.ImageLocalPath = FilePath;
+
+                }
+                else
+                {
+                    Result.ImageUrl = "https://placehold.co/600x400";
+                }
+
 
                 await _villaRepository.UpdateAsync(Result);
                 await _villaRepository.SaveAsync();

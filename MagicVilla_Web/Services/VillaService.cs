@@ -1,4 +1,5 @@
-﻿using MagicVilla_Web.Models;
+﻿using MagicVilla_Utility;
+using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.DTO;
 using MagicVilla_Web.Services.IServices;
 using static MagicVilla_Utility.StaticData;
@@ -20,9 +21,10 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.POST,
-                Url = CLientUrl + "api/v1/VillaAPI",
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaAPI",
                 Data = DTO,
-                Token = Token
+                Token = Token,
+                ContentType = StaticData.ContentType.MultipartFormData
             });
 
         }
@@ -32,7 +34,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.DELETE,
-                Url = CLientUrl+ "api/v1/VillaAPI/" + Id,
+                Url = CLientUrl+ $"api/{StaticData.VillaAPIVersion}/VillaAPI/" + Id,
                 Token = Token
             });
         }
@@ -42,7 +44,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.GET,
-                Url = CLientUrl + "api/v1/VillaAPI",
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaAPI",
                 Token = Token
             });
         }
@@ -52,7 +54,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest()
             {
                 apiType = ApiType.GET,
-                Url = CLientUrl + "api/v1/VillaAPI/" + Id,
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaAPI/" + Id,
                 Token = Token
             });
         }
@@ -62,9 +64,10 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new APIRequest() 
             { 
                 apiType = ApiType.PUT,
-                Url = CLientUrl + "api/v1/VillaAPI/" + DTO.Id,
+                Url = CLientUrl + $"api/{StaticData.VillaAPIVersion}/VillaAPI/" + DTO.Id,
                 Data = DTO ,
-                Token = Token
+                Token = Token,
+                ContentType = StaticData.ContentType.MultipartFormData
             });
         }
     }
