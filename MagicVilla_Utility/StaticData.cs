@@ -11,6 +11,7 @@
         }
 
         public static string AccessToken = "JWTToken";
+        public static string RefreshToken = "RefreshToken";
         public static string VillaAPIVersion = "v2";
         public static string AdminRole = "admin";
         public static string CustomerRole = "customer";

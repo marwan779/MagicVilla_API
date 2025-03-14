@@ -51,7 +51,7 @@ namespace MagicVilla_Web.Controllers
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
 
-                _tokenProvider.SetToken(logInResponseDTO.AccessToken);
+                _tokenProvider.SetToken(logInResponseDTO);
 
                 return RedirectToAction("Index", "Home");   
             }

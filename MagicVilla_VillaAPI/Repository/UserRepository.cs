@@ -8,6 +8,7 @@ using System.Text;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla_VillaAPI.Repository
 {
@@ -64,11 +65,14 @@ namespace MagicVilla_VillaAPI.Repository
                 };
             }
 
-            string accessToken = await GenerateToken(User);
+            string TokenId = $"JTI{Guid.NewGuid()}";
+            string accessToken = await GenerateToken(User, TokenId);
+            string refreshToken = await CreateNewRefreshToken(User.Id, TokenId);
 
             LogInResponseDTO Response = new LogInResponseDTO
             {
                 AccessToken = accessToken,
+                RefreshToken = refreshToken,
                 LocalUser = _mapper.Map<UserDTO>(User),
             };
 
@@ -76,7 +80,7 @@ namespace MagicVilla_VillaAPI.Repository
             return Response;
         }
 
-        public async Task<string> GenerateToken(ApplicationUser User)
+        private async Task<string> GenerateToken(ApplicationUser User, string TokenId)
         {
             var Roles = await _userManger.GetRolesAsync(User);
             var TokenHandler = new JwtSecurityTokenHandler();
@@ -87,10 +91,12 @@ namespace MagicVilla_VillaAPI.Repository
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, User.UserName.ToString()),
-                    new Claim(ClaimTypes.Role, Roles.FirstOrDefault())
+                    new Claim(ClaimTypes.Role, Roles.FirstOrDefault()),
+                    new Claim(JwtRegisteredClaimNames.Jti, TokenId),
+                    new Claim(JwtRegisteredClaimNames.Sub, User.Id)
                 }),
 
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(60),
                 SigningCredentials = new(new SymmetricSecurityKey(Key), SecurityAlgorithms.HmacSha256Signature)
 
             };
@@ -144,6 +150,109 @@ namespace MagicVilla_VillaAPI.Repository
             }
 
         }
+
+        public async Task<LogInResponseDTO> RefreshAccessToken(LogInResponseDTO logInResponseDTO)
+        {
+            RefreshToken ExistingRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Refresh_Token == logInResponseDTO.RefreshToken);
+            if (ExistingRefreshToken == null)
+            {
+                return new LogInResponseDTO();
+            }
+
+            var AccessTokenData = GetAccessTokenData(logInResponseDTO.AccessToken);
+            if(AccessTokenData.IsSuccessful != true || 
+                AccessTokenData.UserId != ExistingRefreshToken.UserId || 
+                AccessTokenData.TokenId != ExistingRefreshToken.JwtTokenId)
+            {
+                ExistingRefreshToken.IsVaild = false;
+                _context.SaveChanges();
+            }
+
+            if (ExistingRefreshToken.IsVaild == false)
+            {
+                List<RefreshToken> RefreshTokens = _context.RefreshTokens.Where(r => r.UserId ==  ExistingRefreshToken.UserId
+                && r.JwtTokenId == ExistingRefreshToken.JwtTokenId).ToList();
+
+                foreach (RefreshToken RefreshToken in RefreshTokens)
+                {
+                    RefreshToken.IsVaild = false;
+                }
+
+                _context.UpdateRange(RefreshTokens);
+                _context.SaveChanges();
+
+                return new LogInResponseDTO();
+            }
+
+
+            if (ExistingRefreshToken.ExpiresAt < DateTime.UtcNow)
+            {
+                ExistingRefreshToken.IsVaild = false;
+                _context.SaveChanges();
+                return new LogInResponseDTO();
+            }
+
+            string NewRefreshToken = await CreateNewRefreshToken(ExistingRefreshToken.UserId, ExistingRefreshToken.JwtTokenId);
+
+
+            ExistingRefreshToken.IsVaild = false;
+            _context.SaveChanges();
+
+            ApplicationUser AppUser = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Id == ExistingRefreshToken.UserId);
+            if (AppUser == null)
+            {
+                return new LogInResponseDTO();
+            }
+
+            string NewAccessToken = await GenerateToken(AppUser, ExistingRefreshToken.JwtTokenId);
+
+            return new LogInResponseDTO()
+            {
+                AccessToken = NewAccessToken,
+                RefreshToken = NewRefreshToken
+            };
+
+
+        }
+
+
+        private async Task<string> CreateNewRefreshToken(string userId, string TokenId)
+        {
+            RefreshToken refreshToken = new RefreshToken()
+            {
+                IsVaild = true,
+                UserId = userId,
+                JwtTokenId = TokenId,
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                Refresh_Token = Guid.NewGuid() + "-" + Guid.NewGuid(),
+            };
+
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+
+            return refreshToken.Refresh_Token;
+
+        }
+
+        private (bool IsSuccessful, string UserId, string TokenId) GetAccessTokenData(string AccessToken)
+        {
+            try
+            {
+                JwtSecurityTokenHandler TokenHandler = new JwtSecurityTokenHandler();
+                var Token = TokenHandler.ReadJwtToken(AccessToken);
+                
+                string UserId = Token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub).Value;
+                string TokenId = Token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
+                return (true, UserId, TokenId);
+            }
+            catch(Exception ex)
+            {
+                return (false, null, null);  
+            }
+
+        }
+
     }
 }
 

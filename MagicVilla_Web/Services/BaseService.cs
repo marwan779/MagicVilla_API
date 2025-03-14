@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using static MagicVilla_Utility.StaticData;
 using System.Net.Http.Headers;
+using MagicVilla_Web.Models.DTO;
 
 namespace MagicVilla_Web.Services
 {
@@ -40,9 +41,9 @@ namespace MagicVilla_Web.Services
 
                 if(WithBearer && _tokenProvider.GetType() != null)
                 {
-                    string Token = _tokenProvider.GetToken();
+                    LogInResponseDTO logInDTO = _tokenProvider.GetToken();
                     
-                    Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                    Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", logInDTO.AccessToken);
                 }
 
                 if(apiRequest.ContentType == ContentType.MultipartFormData)

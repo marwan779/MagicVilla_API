@@ -6,8 +6,8 @@ namespace MagicVilla_Web.Services.IServices
     {
         public void ClearToken();
 
-        public String GetToken();
+        public LogInResponseDTO GetToken();
 
-        public void SetToken(string Token);
+        public void SetToken(LogInResponseDTO logInResponseDTO);
     }
 }

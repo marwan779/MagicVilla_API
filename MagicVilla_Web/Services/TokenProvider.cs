@@ -15,17 +15,28 @@ namespace MagicVilla_Web.Services
         public void ClearToken()
         {
             _contextAccessor.HttpContext?.Response.Cookies.Delete(StaticData.AccessToken);
+            _contextAccessor.HttpContext?.Response.Cookies.Delete(StaticData.RefreshToken);
         }
 
-        public string GetToken()
+        public LogInResponseDTO GetToken()
         {
-            String TokenResult = string.Empty;
+            String JWTTokenResult = string.Empty;
+            String RefreshTokenResult = string.Empty;
 
             try
             {
-               bool HasAccessToken =  _contextAccessor.HttpContext.Request.Cookies.TryGetValue(StaticData.AccessToken, out TokenResult);
+               bool HasAccessToken =  _contextAccessor.HttpContext.Request.Cookies.TryGetValue(StaticData.AccessToken, out JWTTokenResult);
+               bool HasRefreshToken =  _contextAccessor.HttpContext.Request.Cookies.TryGetValue(StaticData.RefreshToken, out RefreshTokenResult);
 
-                return TokenResult;
+
+                LogInResponseDTO logInResponseDTO = new LogInResponseDTO()
+                {
+                    RefreshToken = RefreshTokenResult,
+                    AccessToken = JWTTokenResult,
+                };
+
+
+                return HasAccessToken == true ? logInResponseDTO : null;
             }
             catch (Exception ex)
             {
@@ -34,13 +45,15 @@ namespace MagicVilla_Web.Services
 
         }
 
-        public void SetToken(string Token)
+        public void SetToken(LogInResponseDTO logInResponseDTO)
         {
             CookieOptions cookieOptions = new CookieOptions()
             {
                 Expires = DateTime.UtcNow.AddDays(60)
             };
-            _contextAccessor.HttpContext?.Response.Cookies.Append(StaticData.AccessToken, Token, cookieOptions);
+
+            _contextAccessor.HttpContext?.Response.Cookies.Append(StaticData.AccessToken, logInResponseDTO.AccessToken, cookieOptions);
+            _contextAccessor.HttpContext?.Response.Cookies.Append(StaticData.RefreshToken, logInResponseDTO.RefreshToken, cookieOptions);
         }
     }
 }
