@@ -127,7 +127,7 @@ namespace MagicVilla_VillaAPI.Repository
 
                     if (!_roleManager.RoleExistsAsync(registerationRequestDTO.Role).GetAwaiter().GetResult())
                     {
-                        await _roleManager.CreateAsync(new IdentityRole(registerationRequestDTO.Role));                        
+                        await _roleManager.CreateAsync(new IdentityRole(registerationRequestDTO.Role));
                     }
 
                     await _userManger.AddToRoleAsync(User, registerationRequestDTO.Role);
@@ -159,27 +159,16 @@ namespace MagicVilla_VillaAPI.Repository
                 return new LogInResponseDTO();
             }
 
-            var AccessTokenData = GetAccessTokenData(logInResponseDTO.AccessToken);
-            if(AccessTokenData.IsSuccessful != true || 
-                AccessTokenData.UserId != ExistingRefreshToken.UserId || 
-                AccessTokenData.TokenId != ExistingRefreshToken.JwtTokenId)
+            bool TokenValid = GetAccessTokenData(logInResponseDTO.AccessToken, ExistingRefreshToken.UserId, ExistingRefreshToken.JwtTokenId);
+            if (!TokenValid)
             {
-                ExistingRefreshToken.IsVaild = false;
-                _context.SaveChanges();
+                await MarkTokenAsInvaild(ExistingRefreshToken);
+                return new LogInResponseDTO();
             }
 
             if (ExistingRefreshToken.IsVaild == false)
             {
-                List<RefreshToken> RefreshTokens = _context.RefreshTokens.Where(r => r.UserId ==  ExistingRefreshToken.UserId
-                && r.JwtTokenId == ExistingRefreshToken.JwtTokenId).ToList();
-
-                foreach (RefreshToken RefreshToken in RefreshTokens)
-                {
-                    RefreshToken.IsVaild = false;
-                }
-
-                _context.UpdateRange(RefreshTokens);
-                _context.SaveChanges();
+                await MarkAllTokenInChainAsInvaild(ExistingRefreshToken.JwtTokenId, ExistingRefreshToken.UserId);
 
                 return new LogInResponseDTO();
             }
@@ -187,16 +176,14 @@ namespace MagicVilla_VillaAPI.Repository
 
             if (ExistingRefreshToken.ExpiresAt < DateTime.UtcNow)
             {
-                ExistingRefreshToken.IsVaild = false;
-                _context.SaveChanges();
+                await MarkTokenAsInvaild(ExistingRefreshToken);
                 return new LogInResponseDTO();
             }
 
             string NewRefreshToken = await CreateNewRefreshToken(ExistingRefreshToken.UserId, ExistingRefreshToken.JwtTokenId);
 
 
-            ExistingRefreshToken.IsVaild = false;
-            _context.SaveChanges();
+            await MarkTokenAsInvaild(ExistingRefreshToken);
 
             ApplicationUser AppUser = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Id == ExistingRefreshToken.UserId);
             if (AppUser == null)
@@ -212,6 +199,25 @@ namespace MagicVilla_VillaAPI.Repository
                 RefreshToken = NewRefreshToken
             };
 
+
+        }
+
+        public async Task RevokeRefreshToken(LogInResponseDTO logInResponseDTO)
+        {
+            RefreshToken refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Refresh_Token == logInResponseDTO.RefreshToken);
+
+            if (refreshToken == null)
+            {
+                return;
+            }
+
+            bool TokenValid = GetAccessTokenData(logInResponseDTO.AccessToken, refreshToken.UserId, refreshToken.JwtTokenId);
+            if (!TokenValid)
+            {
+                return;
+            }
+
+            await MarkAllTokenInChainAsInvaild(refreshToken.JwtTokenId, refreshToken.UserId);
 
         }
 
@@ -234,23 +240,44 @@ namespace MagicVilla_VillaAPI.Repository
 
         }
 
-        private (bool IsSuccessful, string UserId, string TokenId) GetAccessTokenData(string AccessToken)
+        private bool GetAccessTokenData(string AccessToken, string ExepectedUserId, string ExpectedTokenId)
         {
             try
             {
                 JwtSecurityTokenHandler TokenHandler = new JwtSecurityTokenHandler();
                 var Token = TokenHandler.ReadJwtToken(AccessToken);
-                
+
                 string UserId = Token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub).Value;
                 string TokenId = Token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
 
-                return (true, UserId, TokenId);
+                return (UserId == ExepectedUserId && TokenId == ExpectedTokenId);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return (false, null, null);  
+                return false;
             }
 
+        }
+
+        private async Task MarkAllTokenInChainAsInvaild(string xpectedTokenId, string ExepectedUserId)
+        {
+            List<RefreshToken> RefreshTokens = _context.RefreshTokens.Where(r => r.UserId == ExepectedUserId
+                && r.JwtTokenId == xpectedTokenId).ToList();
+
+            foreach (RefreshToken RefreshToken in RefreshTokens)
+            {
+                RefreshToken.IsVaild = false;
+            }
+
+            _context.UpdateRange(RefreshTokens);
+            _context.SaveChanges();
+
+        }
+
+        private Task MarkTokenAsInvaild(RefreshToken refreshToken)
+        {
+            refreshToken.IsVaild = false;
+            return _context.SaveChangesAsync();
         }
 
     }

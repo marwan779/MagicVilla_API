@@ -26,7 +26,7 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             LogInResponseDTO Response = await _userRepository.LogIn(logInRequestDTO);
 
-            if(Response.LocalUser == null ||String.IsNullOrEmpty(Response.AccessToken))
+            if (Response.LocalUser == null || String.IsNullOrEmpty(Response.AccessToken))
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add("User name or password is incorrect");
@@ -38,7 +38,7 @@ namespace MagicVilla_VillaAPI.Controllers
             _response.IsSuccess = true;
             _response.StatusCode = HttpStatusCode.OK;
             _response.Result = Response;
-                
+
             return Ok(_response);
         }
 
@@ -60,7 +60,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
             UserDTO Response = await _userRepository.Register(registerationRequestDTO);
 
-            if(Response == null)
+            if (Response == null)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add("Erorr while registering");
@@ -81,7 +81,7 @@ namespace MagicVilla_VillaAPI.Controllers
         public async Task<ActionResult> GetNewTokenFromRefreshToken([FromBody] LogInResponseDTO logInResponseDTO)
         {
 
-            if (ModelState.IsValid) 
+            if (ModelState.IsValid)
             {
                 var TokenResponse = await _userRepository.RefreshAccessToken(logInResponseDTO);
 
@@ -110,7 +110,27 @@ namespace MagicVilla_VillaAPI.Controllers
 
                 return BadRequest(_response);
             }
-            
+
+        }
+
+        [HttpPost("Revoke")]
+        public async Task<ActionResult> ReVokeRefreshToken([FromBody] LogInResponseDTO logInResponseDTO)
+        {
+
+            if (ModelState.IsValid)
+            {
+                await _userRepository.RevokeRefreshToken(logInResponseDTO);
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                return Ok(_response);
+            }
+
+            _response.IsSuccess = false;
+            _response.ErrorMessages.Add("Invaild Input");
+            _response.StatusCode = HttpStatusCode.BadRequest;
+
+            return BadRequest(_response);
+
         }
 
     }

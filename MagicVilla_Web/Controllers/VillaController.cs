@@ -54,9 +54,12 @@ namespace MagicVilla_Web.Controllers
                     TempData["Success"] = "Villa Created Successfully";
                     return RedirectToAction(nameof(VillaIndex));
                 }
+                else
+                {
+                    TempData["Error"] = Response.ErrorMessages.FirstOrDefault();
+                }
             }
 
-            TempData["Erorr"] = "Erorr";
             return View(Model);
         }
 
@@ -90,9 +93,12 @@ namespace MagicVilla_Web.Controllers
                     TempData["Success"] = "Villa Updated Successfully";
                     return RedirectToAction(nameof(VillaIndex));
                 }
+                else
+                {
+                    TempData["Error"] = Response.ErrorMessages.FirstOrDefault();
+                }
             }
 
-            TempData["Erorr"] = "Erorr";
             return View(Model);
         }
 
@@ -125,8 +131,11 @@ namespace MagicVilla_Web.Controllers
                 TempData["Success"] = "Villa Deleted Successfully";
                 return RedirectToAction(nameof(VillaIndex));
             }
+            else
+            {
+                TempData["Error"] = Response.ErrorMessages.FirstOrDefault();
+            }
 
-            TempData["Erorr"] = "Erorr";
             return View(Model);
         }
 

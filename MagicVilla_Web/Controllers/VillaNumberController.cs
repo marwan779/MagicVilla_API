@@ -80,6 +80,7 @@ namespace MagicVilla_Web.Controllers
                     if (Response.IsSuccess == false || Response.ErrorMessages.Count > 0)
                     {
                         ModelState.AddModelError("ErrorMessages", Response.ErrorMessages.FirstOrDefault());
+                        TempData["Error"] = Response.ErrorMessages.FirstOrDefault();
                     }
                 }
             }
@@ -151,6 +152,8 @@ namespace MagicVilla_Web.Controllers
                     if (Response.IsSuccess == false || Response.ErrorMessages.Count > 0)
                     {
                         ModelState.AddModelError("ErrorMessages", Response.ErrorMessages.FirstOrDefault());
+                        TempData["Error"] = Response.ErrorMessages.FirstOrDefault();
+
                     }
                 }
             }
@@ -222,8 +225,10 @@ namespace MagicVilla_Web.Controllers
 					if (Response.IsSuccess == false || Response.ErrorMessages.Count > 0)
 					{
 						ModelState.AddModelError("ErrorMessages", Response.ErrorMessages.FirstOrDefault());
-					}
-				}
+                        TempData["Error"] = Response.ErrorMessages.FirstOrDefault();
+
+                    }
+                }
 			}
 
 
